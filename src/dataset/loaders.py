@@ -2,48 +2,10 @@ import os
 import numpy as np
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from collections import namedtuple
 from pathlib import Path
 from typing import Union
-from PIL import Image
-from pprint import pprint
 
-Landmark = namedtuple('Landmark', 
-                [    'left_brow', 
-                        'right_brow',
-                        'left_eye',
-                        'right_eye',
-                        'nose',
-                        'lower_face',
-                        'outer_lips',
-                        'inner_lips',
-                        'left_eye_lash',
-                        'left_eye_lid',
-                        'right_eye_lash',
-                        'right_eye_lid', 
-                        'face',]
-                )
-
-class FaceLandmarkImage:
-
-        def __init__(self, image_path : Union[Path, str], landmarks : Landmark):
-                self._image_path = Path(image_path)
-                self._landmarks = landmarks
-
-        @property
-        def raw_image(self):
-                return Image.open(self._image_path)
-
-        @property
-        def landmarks(self):
-                return self._landmarks
-
-        def __str__(self):
-                return str(self._image_path)
-
-        def __repr__(self):
-                return os.path.basename(self._image_path)
+from .image import FaceLandmarkImage, Landmark
 
 class FaceLandmarkDataset(ABC):
 
@@ -58,6 +20,10 @@ class FaceLandmarkDataset(ABC):
                 
                 if not self.train_path:
                         raise IOError("Train path doesn't exist")
+
+        @abstractmethod
+        def generate_img(self, src_path):
+                raise NotImplementedError
 
 class LFPWDataset(FaceLandmarkDataset):
 
@@ -172,7 +138,7 @@ class FaceLandmarkDataloaderContext:
                         src_path = self.dloader.train_path
 
                 for src in self._dloader.generate_img(src_path):
-                        pprint(src)
+                        print(src)
 
 if __name__ == "__main__":
 
