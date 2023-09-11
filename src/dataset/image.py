@@ -4,6 +4,12 @@ from dataclasses import dataclass
 from typing import Union, List, Tuple
 from PIL import Image
 
+def clip_x(xy_list : List[Tuple[float, float]], x_sub):
+        return list(filter(lambda z : z[0] >= 0, [(x-x_sub, y) for x, y in xy_list]))
+
+def clip_y(xy_list : List[Tuple[float, float]], y_sub):
+        return list(filter(lambda z : z[1] >= 0, [(x, y-y_sub) for x, y in xy_list]))
+
 @dataclass
 class Landmark:
         left_brow :     List[Tuple[float, float]]
@@ -54,3 +60,12 @@ class FaceLandmarkImage:
         def crop(self, left=None, top=None, right=None, bottom=None):
 
                 ...
+
+
+if __name__ == "__main__":
+
+        example = [(9, 9), (3, 4), (1, 2)]
+
+        # print(clip_x(example, 9))
+
+        print(clip_y(example, 6))
