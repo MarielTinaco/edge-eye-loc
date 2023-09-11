@@ -1,25 +1,24 @@
 import os
 from pathlib import Path
-from collections import namedtuple
-from typing import Union
+from dataclasses import dataclass
+from typing import Union, List, Tuple
 from PIL import Image
 
-Landmark = namedtuple('Landmark', 
-                [    'left_brow', 
-                        'right_brow',
-                        'left_eye',
-                        'right_eye',
-                        'nose',
-                        'lower_face',
-                        'outer_lips',
-                        'inner_lips',
-                        'left_eye_lash',
-                        'left_eye_lid',
-                        'right_eye_lash',
-                        'right_eye_lid', 
-                        'face',]
-                )
-
+@dataclass
+class Landmark:
+        left_brow :     List[Tuple[float, float]]
+        right_brow :    List[Tuple[float, float]]
+        left_eye :      List[Tuple[float, float]]
+        right_eye:      List[Tuple[float, float]]
+        nose:           List[Tuple[float, float]]
+        lower_face:     List[Tuple[float, float]]
+        outer_lips:     List[Tuple[float, float]]
+        inner_lips:     List[Tuple[float, float]]
+        left_eye_lash:  List[Tuple[float, float]]
+        left_eye_lid:   List[Tuple[float, float]]
+        right_eye_lash: List[Tuple[float, float]]
+        right_eye_lid:  List[Tuple[float, float]]
+        face:           List[Tuple[float, float]]
 
 class FaceLandmarkImage:
 
