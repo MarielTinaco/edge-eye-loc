@@ -1,0 +1,5 @@
+numpy
+pandas
+hdf5storage
+ipython
+jupyter
