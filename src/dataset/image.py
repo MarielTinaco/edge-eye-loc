@@ -17,6 +17,9 @@ def drop_x(xy_list : List[Tuple[float, float]], x_drop):
 def drop_y(xy_list : List[Tuple[float, float]], y_drop):
         return list(filter(lambda z : z[1] <= y_drop, [(x, y) for x, y in xy_list]))
 
+def scale(xy_list : List[Tuple[float, float]], sf):
+        return list(map(lambda z : (z[0]*sf, z[1]*sf), xy_list))
+
 @dataclass
 class Landmark:
         left_brow :     List[Tuple[float, float]]
@@ -63,6 +66,9 @@ class FaceLandmarkImage:
         def height(self):
                 return self._image.height
         
+        def show(self):
+                return self._image.show()
+
         def __str__(self):
                 return str(self._image_path)
 
@@ -93,6 +99,32 @@ class FaceLandmarkImage:
                         right_eye_lash = drop_y(drop_x(clip_y(clip_x(self._landmarks.right_eye_lash, left), top), right), bottom),
                         right_eye_lid = drop_y(drop_x(clip_y(clip_x(self._landmarks.right_eye_lid, left), top), right), bottom),
                         face = drop_y(drop_x(clip_y(clip_x(self._landmarks.face, left), top), right), bottom),
+                )
+
+                return type(self)(landmarks=landmark, image=image)
+
+        def uniform_scale(self, scaling_factor: float):
+
+                width, height = self._image.size
+                new_width = width * scaling_factor
+                new_height = height * scaling_factor
+
+                image = self._image.resize((int(new_width), int(new_height)))
+
+                landmark = Landmark(
+                        left_brow=scale(self._landmarks.left_brow, scaling_factor),
+                        right_brow=scale(self._landmarks.right_brow, scaling_factor),
+                        left_eye = scale(self._landmarks.left_eye, scaling_factor),
+                        right_eye = scale(self._landmarks.right_eye, scaling_factor),
+                        nose = scale(self._landmarks.nose, scaling_factor),
+                        lower_face = scale(self._landmarks.lower_face, scaling_factor),
+                        outer_lips = scale(self._landmarks.outer_lips, scaling_factor),
+                        inner_lips = scale(self._landmarks.inner_lips, scaling_factor),
+                        left_eye_lash = scale(self._landmarks.left_eye_lash, scaling_factor),
+                        left_eye_lid = scale(self._landmarks.left_eye_lid, scaling_factor),
+                        right_eye_lash = scale(self._landmarks.right_eye_lash, scaling_factor),
+                        right_eye_lid = scale(self._landmarks.right_eye_lid, scaling_factor),
+                        face = scale(self._landmarks.face, scaling_factor),
                 )
 
                 return type(self)(landmarks=landmark, image=image)
