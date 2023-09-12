@@ -5,6 +5,8 @@ from typing import Union, List, Tuple
 from copy import deepcopy
 from PIL import Image, ImageDraw
 
+from ..utils.converters import landmarks2bbox
+
 def clip_x(xy_list : List[Tuple[float, float]], x_sub):
         return list(filter(lambda z : z[0] >= 0, [(x-x_sub, y) for x, y in xy_list]))
 
@@ -35,6 +37,22 @@ class Landmark:
         right_eye_lash: List[Tuple[float, float]]
         right_eye_lid:  List[Tuple[float, float]]
         face:           List[Tuple[float, float]]
+
+class BoundedBoxImage:
+
+        def __init__(self, image, bbox : dict):
+                self._image = image
+                self._bbox = bbox
+
+        def draw_bbox(self, color='red', eyes=False, nose=False, mouth=False):
+                image_draw = deepcopy(self._image)
+                draw = ImageDraw.Draw(image_draw)
+
+                if eyes:
+                        draw.rectangle(self._bbox['left_eye'], outline=color)
+                        draw.rectangle(self._bbox['right_eye'], outline=color)
+                
+                return image_draw
 
 class FaceLandmarkImage:
 
@@ -162,6 +180,11 @@ class FaceLandmarkImage:
 
 
                 return image_draw
+
+        def create_bbox_image(self):
+                image = deepcopy(self._image)
+                return BoundedBoxImage(image, landmarks2bbox(self._landmarks))
+
 
 if __name__ == "__main__":
 
