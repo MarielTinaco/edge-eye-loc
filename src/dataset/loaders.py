@@ -63,7 +63,7 @@ class LFPWDataset(FaceLandmarkDataset):
                         pts_path = src_path / pts
 
                         full_pts = np.loadtxt(pts_path, comments=("version:", "n_points:", "{", "}")).tolist()
-                        lm = Landmark(**{k : [tuple(full_pts[idx - 1]) for idx in v] for k, v in self.landmark_indices.items()})
+                        lm = Landmark(**{k : [tuple(full_pts[idx]) for idx in v] for k, v in self.landmark_indices.items()})
 
                         yield FaceLandmarkImage(image_path=img_path, landmarks=lm)
 
@@ -116,7 +116,7 @@ class HelenDataset(FaceLandmarkDataset):
 
 class FaceLandmarkDataloaderContext:
 
-        def __init__(self, dloader : FaceLandmarkDataset):
+        def __init__(self, dloader : FaceLandmarkDataset = None):
                 self._dloader = dloader
 
         @property
@@ -138,7 +138,7 @@ class FaceLandmarkDataloaderContext:
                         src_path = self.dloader.train_path
 
                 for src in self._dloader.generate_img(src_path):
-                        print(src)
+                        yield src
 
 if __name__ == "__main__":
 
@@ -149,4 +149,5 @@ if __name__ == "__main__":
         # dloader_ctx.dloader = HelenDataset(HELEN_RAW_SOURCE_PATH)
         # print(dloader_ctx.check_valid())
 
-        dloader_ctx.load("test")
+        for i in dloader_ctx.load("train"):
+                print(i)
