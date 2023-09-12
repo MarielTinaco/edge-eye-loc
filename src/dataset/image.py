@@ -5,6 +5,8 @@ from typing import Union, List, Tuple
 from copy import deepcopy
 from PIL import Image, ImageDraw
 
+from ..utils.converters import landmarks2bbox
+
 def clip_x(xy_list : List[Tuple[float, float]], x_sub):
         return list(filter(lambda z : z[0] >= 0, [(x-x_sub, y) for x, y in xy_list]))
 
@@ -35,6 +37,46 @@ class Landmark:
         right_eye_lash: List[Tuple[float, float]]
         right_eye_lid:  List[Tuple[float, float]]
         face:           List[Tuple[float, float]]
+
+class BoundedBoxImage:
+
+        def __init__(self, image, bbox : dict):
+                self._image = image
+                self._bbox = bbox
+
+        def draw_bbox(self, color='red', eyes=False, nose=False, mouth=False):
+                image_draw = deepcopy(self._image)
+                draw = ImageDraw.Draw(image_draw)
+
+                if eyes:
+                        draw.rectangle(self._bbox['left_eye'], outline=color)
+                        draw.rectangle(self._bbox['right_eye'], outline=color)
+                return image_draw
+
+        def scale_bbox(self, facepart, scaling_factor : Union[int, float, tuple]):
+                new_bbox = deepcopy(self._bbox)
+                bounds = self._bbox[facepart]
+                bwidth = bounds[2] - bounds[0]
+                bheight = bounds[3] - bounds[1]
+
+                if isinstance(scaling_factor, tuple):
+                        left = (bounds[0] + bwidth/2) - scaling_factor[0]*(bwidth/2)
+                        top = (bounds[1] + bheight/2) - scaling_factor[1]*(bheight/2)
+                        right = (bounds[0] + bwidth/2) + scaling_factor[2]*(bwidth/2)
+                        bottom = (bounds[1] + bheight/2) + scaling_factor[3] *(bheight/2)
+
+                        new_bbox[facepart] = (left, top, right, bottom)
+ 
+                else:
+                        left = (bounds[0] + bwidth/2) - scaling_factor*bwidth/2
+                        top = (bounds[1] + bheight/2) - scaling_factor*bheight/2
+                        right = (bounds[0] + bwidth/2) + scaling_factor*(bwidth/2)
+                        bottom = (bounds[1] + bheight/2) + scaling_factor*(bheight/2)
+
+                        new_bbox[facepart] = (left, top, right, bottom)
+
+                return type(self)(deepcopy(self._image), new_bbox)
+
 
 class FaceLandmarkImage:
 
@@ -162,6 +204,11 @@ class FaceLandmarkImage:
 
 
                 return image_draw
+
+        def create_bbox_image(self):
+                image = deepcopy(self._image)
+                return BoundedBoxImage(image, landmarks2bbox(self._landmarks))
+
 
 if __name__ == "__main__":
 
