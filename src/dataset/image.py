@@ -51,8 +51,32 @@ class BoundedBoxImage:
                 if eyes:
                         draw.rectangle(self._bbox['left_eye'], outline=color)
                         draw.rectangle(self._bbox['right_eye'], outline=color)
-                
                 return image_draw
+
+        def scale_bbox(self, facepart, scaling_factor : Union[int, float, tuple]):
+                new_bbox = deepcopy(self._bbox)
+                bounds = self._bbox[facepart]
+                bwidth = bounds[2] - bounds[0]
+                bheight = bounds[3] - bounds[1]
+
+                if isinstance(scaling_factor, tuple):
+                        left = (bounds[0] + bwidth/2) - scaling_factor[0]*(bwidth/2)
+                        top = (bounds[1] + bheight/2) - scaling_factor[1]*(bheight/2)
+                        right = (bounds[0] + bwidth/2) + scaling_factor[2]*(bwidth/2)
+                        bottom = (bounds[1] + bheight/2) + scaling_factor[3] *(bheight/2)
+
+                        new_bbox[facepart] = (left, top, right, bottom)
+ 
+                else:
+                        left = (bounds[0] + bwidth/2) - scaling_factor*bwidth/2
+                        top = (bounds[1] + bheight/2) - scaling_factor*bheight/2
+                        right = (bounds[0] + bwidth/2) + scaling_factor*(bwidth/2)
+                        bottom = (bounds[1] + bheight/2) + scaling_factor*(bheight/2)
+
+                        new_bbox[facepart] = (left, top, right, bottom)
+
+                return type(self)(deepcopy(self._image), new_bbox)
+
 
 class FaceLandmarkImage:
 
