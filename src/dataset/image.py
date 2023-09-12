@@ -6,6 +6,8 @@ from typing import Union, List, Tuple
 from copy import deepcopy
 from PIL import Image, ImageDraw
 
+from ..utils.enumerates import FacePart
+
 def clip_x(xy_list : List[Tuple[float, float]], x_sub):
         return list(filter(lambda z : z[0] >= 0, [(x-x_sub, y) for x, y in xy_list]))
 
@@ -30,6 +32,11 @@ def clip_drop_arr(arr: np.ndarray, px_crop : tuple):
 class Landmark:
         points : np.ndarray
         indices : dict
+
+        def get_cluster(self, facepart : FacePart):
+                facepart = FacePart(facepart)
+                return self.points[np.array(self.indices[facepart.value])]
+
 
 class FaceLandmarkImage:
 
@@ -120,9 +127,9 @@ class FaceLandmarkImage:
 
                 if eye:
                         try:
-                                left_eye_x = self._landmarks.points[:,0][np.array(self._landmarks.indices['left_eye'])].tolist()
-                                left_eye_lash_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['left_eye_lash'])].tolist()
-                                left_eye_lid_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['left_eye_lid'])].tolist()
+                                left_eye_x = self._landmarks.get_cluster('left_eye')[:,0].tolist()
+                                left_eye_lash_y = self._landmarks.get_cluster('left_eye_lash')[:,1].tolist()
+                                left_eye_lid_y = self._landmarks.get_cluster('left_eye_lid')[:,1].tolist()
 
                                 if all([len(left_eye_x)>0, len(left_eye_lash_y)>0, len(left_eye_lid_y)]):
                                         left_eye_left_localized = min(left_eye_x)
@@ -135,10 +142,10 @@ class FaceLandmarkImage:
                                 print("Can't draw left eye bounding box")
 
                         try:
-                                right_eye_x = self._landmarks.points[:,0][np.array(self._landmarks.indices['right_eye'])].tolist()
-                                right_eye_lash_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['right_eye_lash'])].tolist()
-                                right_eye_lid_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['right_eye_lid'])].tolist()
-
+                                right_eye_x = self._landmarks.get_cluster('right_eye')[:,0].tolist()
+                                right_eye_lash_y = self._landmarks.get_cluster('right_eye_lash')[:,1].tolist()
+                                right_eye_lid_y = self._landmarks.get_cluster('right_eye_lid')[:,1].tolist()
+                                
                                 if all([len(right_eye_x)>0, len(right_eye_lash_y)>0, len(right_eye_lid_y)]):
 
                                         right_eye_left_localized = min(right_eye_x)
