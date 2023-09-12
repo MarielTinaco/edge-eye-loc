@@ -99,20 +99,22 @@ class HelenDataset(FaceLandmarkDataset):
 
                 annotation_path = self._src / "annotation" / "annotation"
 
+                image_fnames = set([Path(file.strip('\n')).stem for file in os.listdir(src_path)])
+
                 for txt_file in os.listdir(annotation_path):
                         with open(annotation_path / txt_file, 'r') as annotation_txt:
                                 lines = annotation_txt.readlines()
 
                                 img_name = lines.pop(0).strip('\n')
 
-                                points_list = []
-                                for coord in lines:
-                                        x, y = tuple(coord.rstrip('\n').split(','))
-                                        points_list.append((float(x), float(y)))
-                        
-                        lm = Landmark(**{k : [points_list[idx] for idx in v] for k, v in self.landmark_indices.items()})
+                        points_list = []
+                        for coord in lines:
+                                x, y = tuple(coord.rstrip('\n').split(','))
+                                points_list.append((float(x), float(y)))
 
-                        yield FaceLandmarkImage(image_path= src_path / f"{img_name}.jpg", landmarks=lm)
+                        if img_name in image_fnames:                        
+                                lm = Landmark(**{k : [points_list[idx] for idx in v] for k, v in self.landmark_indices.items()})
+                                yield FaceLandmarkImage(image_path= src_path / f"{img_name}.jpg", landmarks=lm)
 
 class FaceLandmarkDataloaderContext:
 
@@ -146,8 +148,8 @@ if __name__ == "__main__":
 
         dloader_ctx = FaceLandmarkDataloaderContext(LFPWDataset(LFPW_RAW_SOURCE_PATH))
         print(dloader_ctx.check_valid())
-        # dloader_ctx.dloader = HelenDataset(HELEN_RAW_SOURCE_PATH)
-        # print(dloader_ctx.check_valid())
+        dloader_ctx.dloader = HelenDataset(HELEN_RAW_SOURCE_PATH)
+        print(dloader_ctx.check_valid())
 
-        for i in dloader_ctx.load("train"):
+        for i in dloader_ctx.load("test"):
                 print(i)
