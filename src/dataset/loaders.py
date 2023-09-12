@@ -62,8 +62,9 @@ class LFPWDataset(FaceLandmarkDataset):
                         img_path = src_path / img
                         pts_path = src_path / pts
 
-                        full_pts = np.loadtxt(pts_path, comments=("version:", "n_points:", "{", "}")).tolist()
-                        lm = Landmark(**{k : [tuple(full_pts[idx]) for idx in v] for k, v in self.landmark_indices.items()})
+                        full_pts = np.loadtxt(pts_path, comments=("version:", "n_points:", "{", "}"))
+                        # lm = Landmark(**{k : [tuple(full_pts[idx]) for idx in v] for k, v in self.landmark_indices.items()})
+                        lm = Landmark(points=full_pts, indices=self.landmark_indices)
 
                         yield FaceLandmarkImage(image_path=img_path, landmarks=lm)
 
@@ -113,7 +114,7 @@ class HelenDataset(FaceLandmarkDataset):
                                 points_list.append((float(x), float(y)))
 
                         if img_name in image_fnames:                        
-                                lm = Landmark(**{k : [points_list[idx] for idx in v] for k, v in self.landmark_indices.items()})
+                                lm = Landmark(points=np.array(points_list), indices=self.landmark_indices)
                                 yield FaceLandmarkImage(image_path= src_path / f"{img_name}.jpg", landmarks=lm)
 
 class FaceLandmarkDataloaderContext:

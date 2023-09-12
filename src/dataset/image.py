@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Union, List, Tuple
@@ -20,21 +21,15 @@ def drop_y(xy_list : List[Tuple[float, float]], y_drop):
 def scale(xy_list : List[Tuple[float, float]], sf):
         return list(map(lambda z : (z[0]*sf, z[1]*sf), xy_list))
 
+def clip_drop_arr(arr: np.ndarray, px_crop : tuple):
+        arr_to_list = arr.tolist()
+        clipped = drop_y(drop_x(clip_y(clip_x(arr_to_list, px_crop[0]), px_crop[1]), px_crop[2]), px_crop[3])
+        return np.array(clipped)
+
 @dataclass
 class Landmark:
-        left_brow :     List[Tuple[float, float]]
-        right_brow :    List[Tuple[float, float]]
-        left_eye :      List[Tuple[float, float]]
-        right_eye:      List[Tuple[float, float]]
-        nose:           List[Tuple[float, float]]
-        lower_face:     List[Tuple[float, float]]
-        outer_lips:     List[Tuple[float, float]]
-        inner_lips:     List[Tuple[float, float]]
-        left_eye_lash:  List[Tuple[float, float]]
-        left_eye_lid:   List[Tuple[float, float]]
-        right_eye_lash: List[Tuple[float, float]]
-        right_eye_lid:  List[Tuple[float, float]]
-        face:           List[Tuple[float, float]]
+        points : np.ndarray
+        indices : dict
 
 class FaceLandmarkImage:
 
@@ -86,19 +81,8 @@ class FaceLandmarkImage:
                 image = self._image.crop((left, top, right, bottom))
 
                 landmark = Landmark(
-                        left_brow = drop_y(drop_x(clip_y(clip_x(self._landmarks.left_brow, left), top), right), bottom),
-                        right_brow = drop_y(drop_x(clip_y(clip_x(self._landmarks.right_brow, left), top), right), bottom),
-                        left_eye = drop_y(drop_x(clip_y(clip_x(self._landmarks.left_eye, left), top), right), bottom),
-                        right_eye = drop_y(drop_x(clip_y(clip_x(self._landmarks.right_eye, left), top), right), bottom),
-                        nose = drop_y(drop_x(clip_y(clip_x(self._landmarks.nose, left), top), right), bottom),
-                        lower_face = drop_y(drop_x(clip_y(clip_x(self._landmarks.lower_face, left), top), right), bottom),
-                        outer_lips = drop_y(drop_x(clip_y(clip_x(self._landmarks.outer_lips, left), top), right), bottom),
-                        inner_lips = drop_y(drop_x(clip_y(clip_x(self._landmarks.inner_lips, left), top), right), bottom),
-                        left_eye_lash = drop_y(drop_x(clip_y(clip_x(self._landmarks.left_eye_lash, left), top), right), bottom),
-                        left_eye_lid = drop_y(drop_x(clip_y(clip_x(self._landmarks.left_eye_lid, left), top), right), bottom),
-                        right_eye_lash = drop_y(drop_x(clip_y(clip_x(self._landmarks.right_eye_lash, left), top), right), bottom),
-                        right_eye_lid = drop_y(drop_x(clip_y(clip_x(self._landmarks.right_eye_lid, left), top), right), bottom),
-                        face = drop_y(drop_x(clip_y(clip_x(self._landmarks.face, left), top), right), bottom),
+                        points= clip_drop_arr(self._landmarks.points, (left, top, right, bottom)),
+                        indices= self._landmarks.indices
                 )
 
                 return type(self)(landmarks=landmark, image=image)
@@ -135,31 +119,36 @@ class FaceLandmarkImage:
                 draw = ImageDraw.Draw(image_draw)
 
                 if eye:
-                        left_eye_x = [x[0] for x in self._landmarks.left_eye]
-                        left_eye_lash_y = [y_lash[1] for y_lash in self._landmarks.left_eye_lash]
-                        left_eye_lid_y = [y_lid[1] for y_lid in self._landmarks.left_eye_lid]
+                        try:
+                                left_eye_x = self._landmarks.points[:,0][np.array(self._landmarks.indices['left_eye'])].tolist()
+                                left_eye_lash_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['left_eye_lash'])].tolist()
+                                left_eye_lid_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['left_eye_lid'])].tolist()
 
-                        if all([len(left_eye_x)>0, len(left_eye_lash_y)>0, len(left_eye_lid_y)]):
-                                left_eye_left_localized = min(left_eye_x)
-                                left_eye_right_localized = max(left_eye_x)
-                                left_eye_top_localized = min(left_eye_lash_y)
-                                left_eye_bottom_localized = max(left_eye_lid_y)
+                                if all([len(left_eye_x)>0, len(left_eye_lash_y)>0, len(left_eye_lid_y)]):
+                                        left_eye_left_localized = min(left_eye_x)
+                                        left_eye_right_localized = max(left_eye_x)
+                                        left_eye_top_localized = min(left_eye_lash_y)
+                                        left_eye_bottom_localized = max(left_eye_lid_y)
 
-                                draw.rectangle((left_eye_left_localized, left_eye_top_localized, left_eye_right_localized, left_eye_bottom_localized), outline=color)
+                                        draw.rectangle((left_eye_left_localized, left_eye_top_localized, left_eye_right_localized, left_eye_bottom_localized), outline=color)
+                        except:
+                                print("Can't draw left eye bounding box")
 
-                        right_eye_x = [z[0] for z in self._landmarks.right_eye]
-                        right_eye_lash_y = [z[1] for z in self._landmarks.right_eye_lash]
-                        right_eye_lid_y = [z[1] for z in self._landmarks.right_eye_lid]
+                        try:
+                                right_eye_x = self._landmarks.points[:,0][np.array(self._landmarks.indices['right_eye'])].tolist()
+                                right_eye_lash_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['right_eye_lash'])].tolist()
+                                right_eye_lid_y = self._landmarks.points[:,1][np.array(self._landmarks.indices['right_eye_lid'])].tolist()
 
-                        if all([len(right_eye_x)>0, len(right_eye_lash_y)>0, len(right_eye_lid_y)]):
+                                if all([len(right_eye_x)>0, len(right_eye_lash_y)>0, len(right_eye_lid_y)]):
 
-                                right_eye_left_localized = min(right_eye_x)
-                                right_eye_right_localized = max(right_eye_x)
-                                right_eye_top_localized = min(right_eye_lash_y)
-                                right_eye_bottom_localized = max(right_eye_lid_y)
+                                        right_eye_left_localized = min(right_eye_x)
+                                        right_eye_right_localized = max(right_eye_x)
+                                        right_eye_top_localized = min(right_eye_lash_y)
+                                        right_eye_bottom_localized = max(right_eye_lid_y)
 
-                                draw.rectangle((right_eye_left_localized, right_eye_top_localized, right_eye_right_localized, right_eye_bottom_localized), outline=color)
-
+                                        draw.rectangle((right_eye_left_localized, right_eye_top_localized, right_eye_right_localized, right_eye_bottom_localized), outline=color)
+                        except:
+                                print("Can't draw right eye bounding box")
 
                 return image_draw
 
