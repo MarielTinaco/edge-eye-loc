@@ -62,6 +62,27 @@ class BoundedBoxImage:
 
                 return type(self)(deepcopy(self._image), new_bbox)
 
+        def pad_bbox(self, facepart, padding : Union[int, tuple]):
+                new_bbox = deepcopy(self._bbox)
+                bounds = self._bbox[facepart]
+
+                if isinstance(padding, tuple):
+                        left = bounds[0] - padding[0]
+                        top = bounds[1] - padding[1]
+                        right = bounds[2] + padding[2]
+                        bottom = bounds[3] + padding[3]
+
+                        new_bbox[facepart] = (left, top, right, bottom)
+ 
+                else:
+                        left = bounds[0] - padding
+                        top = bounds[1] - padding
+                        right = bounds[2] + padding
+                        bottom = bounds[3] + padding
+
+                        new_bbox[facepart] = (left, top, right, bottom)
+
+                return type(self)(deepcopy(self._image), new_bbox)
 
 class FaceLandmarkImage:
 
