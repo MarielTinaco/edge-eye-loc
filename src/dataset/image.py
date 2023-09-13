@@ -5,22 +5,7 @@ from typing import Union, List, Tuple
 from copy import deepcopy
 from PIL import Image, ImageDraw
 
-from ..utils.converters import landmarks2bbox
-
-def clip_x(xy_list : List[Tuple[float, float]], x_sub):
-        return list(filter(lambda z : z[0] >= 0, [(x-x_sub, y) for x, y in xy_list]))
-
-def clip_y(xy_list : List[Tuple[float, float]], y_sub):
-        return list(filter(lambda z : z[1] >= 0, [(x, y-y_sub) for x, y in xy_list]))
-
-def drop_x(xy_list : List[Tuple[float, float]], x_drop):
-        return list(filter(lambda z : z[0] <= x_drop, [(x, y) for x, y in xy_list]))
-
-def drop_y(xy_list : List[Tuple[float, float]], y_drop):
-        return list(filter(lambda z : z[1] <= y_drop, [(x, y) for x, y in xy_list]))
-
-def scale(xy_list : List[Tuple[float, float]], sf):
-        return list(map(lambda z : (z[0]*sf, z[1]*sf), xy_list))
+from ..utils.converters import landmarks2bbox, clip_x, clip_y, drop_x, drop_y, scale
 
 @dataclass
 class Landmark:

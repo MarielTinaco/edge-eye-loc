@@ -1,3 +1,4 @@
+from typing import Union, List, Tuple
 
 
 def landmarks2bbox(landmarks):
@@ -25,3 +26,19 @@ def landmarks2bbox(landmarks):
                 bbox_box['right_eye'] = (min(right_eye_x), min(right_eye_lash_y), max(right_eye_x), max(right_eye_lid_y))
 
         return bbox_box
+
+
+def clip_x(xy_list : List[Tuple[float, float]], x_sub):
+        return list(filter(lambda z : z[0] >= 0, [(x-x_sub, y) for x, y in xy_list]))
+
+def clip_y(xy_list : List[Tuple[float, float]], y_sub):
+        return list(filter(lambda z : z[1] >= 0, [(x, y-y_sub) for x, y in xy_list]))
+
+def drop_x(xy_list : List[Tuple[float, float]], x_drop):
+        return list(filter(lambda z : z[0] <= x_drop, [(x, y) for x, y in xy_list]))
+
+def drop_y(xy_list : List[Tuple[float, float]], y_drop):
+        return list(filter(lambda z : z[1] <= y_drop, [(x, y) for x, y in xy_list]))
+
+def scale(xy_list : List[Tuple[float, float]], sf):
+        return list(map(lambda z : (z[0]*sf, z[1]*sf), xy_list))
