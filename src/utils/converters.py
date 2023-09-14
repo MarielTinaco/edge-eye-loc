@@ -42,3 +42,6 @@ def drop_y(xy_list : List[Tuple[float, float]], y_drop):
 
 def scale(xy_list : List[Tuple[float, float]], sf):
         return list(map(lambda z : (z[0]*sf, z[1]*sf), xy_list))
+
+def mirror_(xy_list : List[Tuple[float, float]], full_width):
+        return list(map(lambda z : (full_width - z[0], z[1]), xy_list))
