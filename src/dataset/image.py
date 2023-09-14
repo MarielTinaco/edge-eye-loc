@@ -29,6 +29,14 @@ class BoundedBoxImage:
                 self._image = image
                 self._bbox = bbox
 
+        @property
+        def bbox(self):
+                return self._bbox
+
+        @property
+        def image(self):
+                return self._image
+
         def draw_bbox(self, color='red', eyes=False, nose=False, mouth=False):
                 image_draw = deepcopy(self._image)
                 draw = ImageDraw.Draw(image_draw)
@@ -91,7 +99,6 @@ class FaceLandmarkImage:
 
                 if image:
                         self._image = image
-                        print("Image path is ignored")
                         image_path = None
 
                 if image_path:                
@@ -109,6 +116,10 @@ class FaceLandmarkImage:
         @property
         def width(self):
                 return self._image.width
+
+        @property
+        def fpath(self):
+                return self._image_path
 
         @property
         def height(self):
