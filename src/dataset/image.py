@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Union, List, Tuple
 from copy import deepcopy
 from PIL import Image, ImageDraw
+from collections import defaultdict
 
 from ..utils.converters import landmarks2bbox, clip_x, clip_y, drop_x, drop_y, scale
 
@@ -36,6 +37,24 @@ class BoundedBoxImage:
         @property
         def image(self):
                 return self._image
+
+        def get_rect(self, facepart):
+                value = self._bbox[facepart]
+                return {
+                        'height' : (value[3] - value[1]),
+                        'width' : (value[2] - value[0]),
+                        'left' : value[0],
+                        'top' : value[1],
+                }
+        
+        def get_rect_as_list(self, facepart):
+                value = self._bbox[facepart]
+                return [
+                        value[3] - value[1],
+                        value[0],
+                        value[1],
+                        value[2] - value[0]
+                ]
 
         def draw_bbox(self, color='red', eyes=False, nose=False, mouth=False):
                 image_draw = deepcopy(self._image)
