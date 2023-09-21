@@ -241,6 +241,19 @@ class FaceLandmarkImage:
 
                 return image_draw
 
+        def draw_points(self, color='yellow', radius=1):
+
+                image_draw = deepcopy(self._image)
+                draw = ImageDraw.Draw(image_draw)
+
+                for key in self._landmarks.__annotations__.keys():
+                        for coords in getattr(self._landmarks, key):
+                                x0, y0 = coords[0] - radius, coords[1] - radius
+                                x1, y1 = coords[0] + radius, coords[1] + radius
+                                draw.ellipse([(x0, y0), (x1, y1)], outline=color, fill=color, width=1)
+
+                return image_draw
+
         def create_bbox_image(self):
                 image = deepcopy(self._image)
                 return BoundedBoxImage(image, landmarks2bbox(self._landmarks))
